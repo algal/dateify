@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# Function to format date in "yyyymmddThhmmss" format
+format_date() {
+    # $1 is the date to format
+    # Detecting OS type for date formatting
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # For macOS
+        date -j -f "%Y-%m-%d %H:%M:%S" "$1" +"%Y%m%dT%H%M%S"
+    else
+        # For Linux
+        date -d "$1" +"%Y%m%dT%H%M%S"
+    fi
+}
+
+# Iterating over each argument
+for file in "$@"
+do
+    # Check if the file exists
+    if [[ ! -f "$file" ]]; then
+        echo "File not found: $file"
+        continue
+    fi
+
+    # Extracting filename and directory
+    filename=$(basename "$file")
+    directory=$(dirname "$file")
+
+    # Regex to check the format "yyyymmddThhmmss--"
+    if [[ $filename =~ ^[0-9]{8}T[0-9]{6}-- ]]; then
+        echo "Filename already in format: $filename"
+        continue
+    fi
+
+    # Getting creation date in "yyyy-mm-dd HH:MM:SS" format (macOS and Linux compatible)
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # For macOS
+        creation_date=$(stat -f "%Sm" -t "%F %T" "$file")
+    else
+        # For Linux
+        creation_date=$(stat -c "%w" "$file" | cut -d '.' -f 1)
+        if [[ $creation_date == "-" ]]; then
+            # Fallback if birth time is not available
+            creation_date=$(stat -c "%y" "$file" | cut -d '.' -f 1)
+        fi
+    fi
+
+    # Formatting the date
+    formatted_date=$(format_date "$creation_date")
+
+    # Renaming the file
+    mv "$file" "$directory/$formatted_date--$filename"
+    echo "Renamed $file to $directory/$formatted_date--$filename"
+done
