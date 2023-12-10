@@ -1,5 +1,34 @@
 #!/bin/bash
 
+
+# Function to display usage message
+usage() {
+    echo "Usage: $(basename $0) [OPTION]... [FILE]..."
+    echo
+    echo "Rename files by adding or removing a date-time prefix"
+    echo "in the following format yyyymmddThhmmss--"
+    echo
+    echo "Options:"
+    echo "  -u, --undo     Undo the renaming, removing the date-time prefix"
+    echo "  -h, --help     Display this help message and exit"
+    echo
+    echo "Example:"
+    echo "  $(basename $0) file1.txt file2.txt     # Add date-time prefix"
+    echo "  $(basename $0) --undo file1.txt        # Remove date-time prefix"
+}
+
+# Check for '--help' or '-h' option
+if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+    usage
+    exit 0
+fi
+
+undo_mode=false
+if [[ "$1" == "--undo" ]] || [[ "$1" == "-u" ]]; then
+    undo_mode=true
+    shift # Remove '--undo' from arguments
+fi
+
 # Function to format date in "yyyymmddThhmmss" format
 format_date() {
     # $1 is the date to format
@@ -26,29 +55,45 @@ do
     filename=$(basename "$file")
     directory=$(dirname "$file")
 
-    # Regex to check the format "yyyymmddThhmmss--"
-    if [[ $filename =~ ^[0-9]{8}T[0-9]{6}-- ]]; then
-        echo "Filename already in format: $filename"
-        continue
-    fi
-
-    # Getting creation date in "yyyy-mm-dd HH:MM:SS" format (macOS and Linux compatible)
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        # For macOS
-        creation_date=$(stat -f "%Sm" -t "%F %T" "$file")
-    else
-        # For Linux
-        creation_date=$(stat -c "%w" "$file" | cut -d '.' -f 1)
-        if [[ $creation_date == "-" ]]; then
-            # Fallback if birth time is not available
-            creation_date=$(stat -c "%y" "$file" | cut -d '.' -f 1)
+    if $undo_mode; then
+        # Undo mode: Remove the "yyyymmddThhmmss--" prefix if present
+        new_filename=$(echo "$filename" | sed -E 's/^[0-9]{8}T[0-9]{6}--//')
+        if [[ "$filename" != "$new_filename" ]]; then
+            mv "$file" "$directory/$new_filename"
+            echo "Renamed back: $file to $directory/$new_filename"
+        else
+            echo "No prefix to remove for: $filename"
         fi
+    else
+        # Normal mode: Add the "yyyymmddThhmmss--" prefix
+        # ... (rest of the script for adding the prefix remains the same)
+        # Please insert the code for adding the prefix here
+
+
+        # Regex to check the format "yyyymmddThhmmss--"
+        if [[ $filename =~ ^[0-9]{8}T[0-9]{6}-- ]]; then
+            echo "Filename already in format: $filename"
+            continue
+        fi
+
+        # Getting creation date in "yyyy-mm-dd HH:MM:SS" format (macOS and Linux compatible)
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            # For macOS
+            creation_date=$(stat -f "%Sm" -t "%F %T" "$file")
+        else
+            # For Linux
+            creation_date=$(stat -c "%w" "$file" | cut -d '.' -f 1)
+            if [[ $creation_date == "-" ]]; then
+                # Fallback if birth time is not available
+                creation_date=$(stat -c "%y" "$file" | cut -d '.' -f 1)
+            fi
+        fi
+
+        # Formatting the date
+        formatted_date=$(format_date "$creation_date")
+
+        # Renaming the file
+        mv "$file" "$directory/$formatted_date--$filename"
+        echo "Renamed $file to $directory/$formatted_date--$filename"
     fi
-
-    # Formatting the date
-    formatted_date=$(format_date "$creation_date")
-
-    # Renaming the file
-    mv "$file" "$directory/$formatted_date--$filename"
-    echo "Renamed $file to $directory/$formatted_date--$filename"
 done
