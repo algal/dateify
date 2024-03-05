@@ -2,7 +2,8 @@
 
 The =dateify= command will add a prefix of the form "YYYYMMDDHHmmss--" to a file's name, based on its creation date. =dateify --undo= will remove that prefix.
 
-Works on Linux and macOS.
+Requirements. Depends on `stat` and `date`. Detects if it finds the coreutuils or BSD version, so it will work on Linux, on macOS, or in macOS environments where the PATH points to coreutils versions.
+
 
 ** agenda
 
