@@ -1,9 +1,8 @@
 #!/bin/bash
 
-
 # Function to display usage message
 usage() {
-    echo "Usage: $(basename $0) [OPTION]... [FILE]..."
+    echo "Usage: $(basename "$0") [OPTION]... [FILE]..."
     echo
     echo "Rename files by adding or removing a date-time prefix"
     echo "in the following format yyyymmddThhmmss--"
@@ -13,8 +12,8 @@ usage() {
     echo "  -h, --help     Display this help message and exit"
     echo
     echo "Example:"
-    echo "  $(basename $0) file1.txt file2.txt     # Add date-time prefix"
-    echo "  $(basename $0) --undo file1.txt        # Remove date-time prefix"
+    echo "  $(basename "$0") file1.txt file2.txt     # Add date-time prefix"
+    echo "  $(basename "$0") --undo file1.txt        # Remove date-time prefix"
 }
 
 # Check for '--help' or '-h' option
@@ -32,14 +31,33 @@ fi
 # Function to format date in "yyyymmddThhmmss" format
 format_date() {
     # $1 is the date to format
-    # Detecting OS type for date formatting
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        # For macOS
-        date -j -f "%Y-%m-%d %H:%M:%S" "$1" +"%Y%m%dT%H%M%S"
-    else
-        # For Linux
+
+    # Check whether 'date' command is the coreutils version.
+    if date --version >/dev/null 2>&1; then
+        # GNU coreutils date
         date -d "$1" +"%Y%m%dT%H%M%S"
+    else
+        # Presumably macOS date
+        date -j -f "%Y-%m-%d %H:%M:%S" "$1" +"%Y%m%dT%H%M%S"
     fi
+}
+
+get_creation_date() {
+    # $1 is the file from which to get the creation date
+
+    # Check whether 'stat' command is the coreutils version.
+    if stat --version >/dev/null 2>&1; then
+        # GNU coreutils stat
+        creation_date=$(stat -c "%w" "$1" | cut -d '.' -f 1)
+        if [[ $creation_date == "-" ]]; then
+            # Fallback if birth time is not available
+            creation_date=$(stat -c "%y" "$1" | cut -d '.' -f 1)
+        fi
+    else
+        # Presumably macOS stat
+        creation_date=$(stat -f "%SB" -t "%F %T" "$1")
+    fi
+    echo "$creation_date"
 }
 
 # Iterating over each argument
@@ -77,18 +95,7 @@ do
         fi
 
         # Getting creation date in "yyyy-mm-dd HH:MM:SS" format (macOS and Linux compatible)
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            # For macOS
-            creation_date=$(stat -f "%Sm" -t "%F %T" "$file")
-        else
-            # For Linux
-            creation_date=$(stat -c "%w" "$file" | cut -d '.' -f 1)
-            if [[ $creation_date == "-" ]]; then
-                # Fallback if birth time is not available
-                creation_date=$(stat -c "%y" "$file" | cut -d '.' -f 1)
-            fi
-        fi
-
+        creation_date=$(get_creation_date "$file")
         # Formatting the date
         formatted_date=$(format_date "$creation_date")
 
