@@ -1,0 +1,43 @@
+
+* Tasks
+
+** TODO compare a swift implementation
+
+** TODO test further
+
+- [ ] correct handling of spaces
+- [ ] correct handling of directories
+- [ ] correct handling of parentheses
+- [ ] correct handling of emojis
+
+* Log
+
+** [2024-06-16 Sun 19:48]
+
+An equivalent timestamp can be generated in JS with
+
+#+begin_src js
+function generateTimestamp() {
+    const padNumber = (number) => number.toString().padStart(2, '0');
+    
+    const date = new Date();
+    
+    const yyyy = date.getFullYear();
+    const MM = padNumber(date.getMonth() + 1);
+    const dd = padNumber(date.getDate());
+    const hh = padNumber(date.getHours());
+    const mm = padNumber(date.getMinutes());
+    const ss = padNumber(date.getSeconds());
+    
+    return `${yyyy}${MM}${dd}T${hh}${mm}${ss}`;
+}
+#+end_src
+
+or by using MomentJS with
+
+#+begin_src js
+let moment = require('moment');
+
+let timestamp = moment().format('YYYYMMDD[T]HHmmss');
+console.log(timestamp);
+#+end_src

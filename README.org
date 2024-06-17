@@ -2,47 +2,10 @@
 
 The =dateify= command will add a prefix of the form "YYYYMMDDHHmmss--" to a file's name, based on its creation date. =dateify --undo= will remove that prefix.
 
-Why this format? It is precise enough probably to be unique, so it serves as a decent short ID. It sorts into time order, of course. It has no spaces, so it is easier to handle safely in filenames. It's a valid ISO8601 variation. For these reasons, it is is also the timestamp format defined by [[https://protesilaos.com/emacs/denote#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][the Denote emacs package]]. 
+Why this format? It is precise enough usually to be unique for manually created files, so it serves as a decent short ID. It sorts into time order. It has no spaces, so it is easier to handle safely in filenames. It's a valid ISO8601 variation. For these reasons, it is is also the timestamp format defined by [[https://protesilaos.com/emacs/denote#h:4e9c7512-84dc-4dfb-9fa9-e15d51178e5d][the Denote note-taking system in emacs]]. 
 
 ** Requirements. 
 
-Depends on `stat` and `date`. Detects if it finds the coreutuils or BSD version, so it will work on Linux, on macOS, or in macOS environments where the PATH points to coreutils versions.
+The python version needs Python 3.6 or later.
 
-** An equivalent 
-
-** agenda
-
-Needs testing:
-
-- [ ] correct handling of spaces
-- [ ] correct handling of directories
-- [ ] correct handling of parentheses
-- [ ] correct handling of emojis
-
-An equivalent timestamp can be generated in JS with
-
-#+begin_src js
-function generateTimestamp() {
-    const padNumber = (number) => number.toString().padStart(2, '0');
-    
-    const date = new Date();
-    
-    const yyyy = date.getFullYear();
-    const MM = padNumber(date.getMonth() + 1);
-    const dd = padNumber(date.getDate());
-    const hh = padNumber(date.getHours());
-    const mm = padNumber(date.getMinutes());
-    const ss = padNumber(date.getSeconds());
-    
-    return `${yyyy}${MM}${dd}T${hh}${mm}${ss}`;
-}
-#+end_src
-
-or by using MomentJS with
-
-#+begin_src js
-let moment = require('moment');
-
-let timestamp = moment().format('YYYYMMDD[T]HHmmss');
-console.log(timestamp);
-#+end_src
+The bash version of the command depends on `stat` and `date`. It detects if it finds the coreutuils or BSD version, so it will work on Linux, on macOS, or in macOS environments where the PATH points to coreutils versions.
