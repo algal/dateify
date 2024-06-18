@@ -45,8 +45,8 @@ def main():
     args = parser.parse_args()
     action = dateify if not args.undo else undateify
 
-    for f in args.file:
-        action(Path(f))
+    for p in (Path(f) for f in args.file if Path(f).exists()):
+        action(p)
     exit(0)
 
 if __name__ == '__main__':
