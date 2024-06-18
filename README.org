@@ -9,3 +9,5 @@ Why this format? It is precise enough usually to be unique for manually created 
 The python version needs Python 3.6 or later.
 
 The bash version of the command depends on `stat` and `date`. It detects if it finds the coreutuils or BSD version, so it will work on Linux, on macOS, or in macOS environments where the PATH points to coreutils versions.
+
+The swift version fails on Linux, because on Linux FileManager does not report file creation time.
