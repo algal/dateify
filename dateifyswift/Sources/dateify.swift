@@ -15,6 +15,7 @@ extension Path {
         let fileManager = FileManager.default
         do {
             let attributes = try fileManager.attributesOfItem(atPath: self.string)
+            // This fails on Linux
             if let creationDate = attributes[.creationDate] as? Date {
                 return creationDate
             } else {
@@ -31,7 +32,8 @@ extension Path {
 func dateify(_ path: Path) throws {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyyMMdd'T'HHmmss--"
-    dateFormatter.timeZone = TimeZone.gmt
+    // this is necessary because TimeZone.gmt is not available on Linux :(
+    dateFormatter.timeZone = TimeZone.init(identifier:"GMT")
 
     if (try? dateTimeRegex.prefixMatch(in: path.basename())) != nil {
         print("File already in dateify format: \(path)")

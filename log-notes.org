@@ -41,3 +41,25 @@ let moment = require('moment');
 let timestamp = moment().format('YYYYMMDD[T]HHmmss');
 console.log(timestamp);
 #+end_src
+
+** [2024-06-18 Tue 09:28] notes on linux
+
+  
+cross-platform failures observed in Swift 5.10:
+- =TimeZone.gmt= not available on Linux
+- =FileManager.attributesOfItem= does not return creationTime on Linux
+  - Would need special-case code to hit the C API for the stat system call
+
+
+[[https://www.swift.org/documentation/articles/static-linux-getting-started.html][post on static linux builds]]:
+- it seems to require installing an SDK separate from the usual toolchain
+- the recommended command =swift sdk list= fails with my swift, which
+  was apt-installed from a third-party apt repo associated with "works on arm"
+  - either the instructions are broken
+  - or my non-standard APT repo is installing a non-standard swift
+- Without using sdk command to specify a static toolchain, is the
+  default executable I build on Linux actually distributable? Maybe not.
+
+conclusion: 
+- Swift badly lags Python for OOTB cross-platform reliability.
+
